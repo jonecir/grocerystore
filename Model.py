@@ -39,8 +39,8 @@ class Supplier:
 
 
 class Person:
-    def __init__(self,perName, perSSN, perEmail, perPhone, perAddress):
-        self.perSSN = perName
+    def __init__(self, perName, perSSN, perEmail, perPhone, perAddress):
+        self.perName = perName
         self.perSSN = perSSN
         self.perEmail = perEmail
         self.perPhone = perPhone
@@ -48,7 +48,8 @@ class Person:
 
 
 class Employee(Person):
-    def __init__(self, empID, empName, empSSN, empEmail, empPhone, empAddress):
+    def __init__(self, empID, perName, perSSN, perEmail, perPhone, perAddress):
         self.empID = empID
-        super(Employee, self).__init__(empName, empSSN, empEmail, empPhone, empAddress)
+        super(Employee, self).__init__(
+            perName, perSSN, perEmail, perPhone, perAddress)
 
