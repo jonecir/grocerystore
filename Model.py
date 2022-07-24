@@ -3,8 +3,7 @@
 from datetime import datetime
 
 class Category:
-    def __init__(self, catID, catName):
-        self.catID = catID
+    def __init__(self, catName):
         self.catName = catName
 
 
@@ -12,7 +11,7 @@ class Product:
     def __init__(self, prodID, prodName, prodPrice, prodCat):
         self.prodID = prodID
         self.prodName = prodName
-        self.prodQty = prodPrice
+        self.prodPrice = prodPrice
         self.prodCat = prodCat
 
 
@@ -23,7 +22,7 @@ class prodStock:
 
 
 class sellProduct:
-    def __init__(self,soldProd:Product, salesPerson, buyerPerson, qtySold, dateSold = datetime.now()):
+    def __init__(self,soldProd:Product, salesPerson, buyerPerson, qtySold, dateSold = datetime.now().strftime('%m/%d/%Y')):
         self.soldProd = soldProd
         self.salesPerson = salesPerson
         self.buyerPerson = buyerPerson
