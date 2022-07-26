@@ -11,7 +11,7 @@ class CategoryDAO:
 
     
     @classmethod
-    def readCategory(cls):
+    def readCategories(cls):
         with open("categories.txt", 'r') as fcat:
             cls.categories = fcat.readlines()
 
@@ -19,11 +19,11 @@ class CategoryDAO:
             map(lambda x: x.replace('\n', ''), cls.categories))
         
         #put categories in a separate list
-        cat = []
+        cats = []
         for i in cls.categories:
-            cat.append(i)
+            cats.append(i)
         
-        return cat
+        return cats
 
 
 class ProductDAO:
@@ -216,6 +216,11 @@ class EmployeeDAO:
         return emps
 
 
+#cat = Category('Veggies')
+#CategoryDAO.saveCategory(cat)
+#cats = CategoryDAO.readCategories()
+#for i in cats:
+#   print(i)
 #pr = Product('1', 'Apple', '5', "Fruits")
 #pr = Product('2', 'Orange', '3', "Fruits")
 #ProductDAO.saveProduct(pr)
@@ -251,9 +256,9 @@ class EmployeeDAO:
       #per[0].perPhone, per[0].perAddress)
 
 #empID, empName, empSSN, empEmail, empPhone, empAddress
-emp = Employee('2','Eliane', '383-22-2367', 'eliane@gmail.com', '47-99848-1630', 'R. Jaboticabal, 32')
-EmployeeDAO.saveEmployee(emp)
-emp = EmployeeDAO.readEmployees()
-print(emp[0].empID, emp[0].perName, emp[0].perSSN,
-      emp[0].perEmail, emp[0].perPhone, emp[0].perAddress)
+#emp = Employee('2','Eliane', '383-22-2367', 'eliane@gmail.com', '47-99848-1630', 'R. Jaboticabal, 32')
+#EmployeeDAO.saveEmployee(emp)
+#emp = EmployeeDAO.readEmployees()
+#print(emp[0].empID, emp[0].perName, emp[0].perSSN,
+#      emp[0].perEmail, emp[0].perPhone, emp[0].perAddress)
 
