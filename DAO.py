@@ -12,18 +12,23 @@ class CategoryDAO:
     
     @classmethod
     def readCategories(cls):
-        with open("categories.txt", 'r') as fcat:
-            cls.categories = fcat.readlines()
-
-        cls.categories = list(
-            map(lambda x: x.replace('\n', ''), cls.categories))
-        
-        #put categories in a separate list
         cats = []
-        for i in cls.categories:
-            cats.append(i)
-        
-        return cats
+        try:
+            with open("categories.txt", 'r') as fcat:
+                cls.categories = fcat.readlines()
+
+            cls.categories = list(
+                map(lambda x: x.replace('\n', ''), cls.categories))
+            
+            #put categories in a separate list
+            #cats = []
+            for i in cls.categories:
+                cats.append(i)
+            
+            return cats
+        except FileNotFoundError:
+            print("categories.txt file does not exist!")
+            return cats
 
 
 class ProductDAO:
@@ -67,21 +72,25 @@ class StockDAO:
 
     @classmethod
     def readStock(cls):
-        with open('prodstocks.txt', 'r') as fsto:
-            cls.prodstocks = fsto.readlines()
-
-        #replaces the \n by nothing
-        cls.prodstocks = list(
-            map(lambda x: x.replace('\n', ''), cls.prodstocks))
-
-        #split each sales inside a list
-        cls.prodstocks = list(
-            map(lambda x: x.split('|'), cls.prodstocks))
-
         stock = []
-        for i in cls.prodstocks:
-            stock.append(prodStock(Product(i[0], i[1], i[2], i[3]), i[4]))
+        try:
+            with open('prodstocks.txt', 'r') as fsto:
+                cls.prodstocks = fsto.readlines()
 
+            #replaces the \n by nothing
+            cls.prodstocks = list(
+                map(lambda x: x.replace('\n', ''), cls.prodstocks))
+
+            #split each sales inside a list
+            cls.prodstocks = list(
+                map(lambda x: x.split('|'), cls.prodstocks))
+
+            for i in cls.prodstocks:
+                stock.append(prodStock(Product(i[0], i[1], i[2], i[3]), int(i[4])))
+
+        except FileNotFoundError:
+            print('prodstocks.txt file not found!')
+        
         return stock
 
 
@@ -222,13 +231,16 @@ class EmployeeDAO:
 #for i in cats:
 #   print(i)
 #pr = Product('1', 'Apple', '5', "Fruits")
-#pr = Product('2', 'Orange', '3', "Fruits")
+#pr = Product('3', 'Carrots', '5', "Vegetables")
 #ProductDAO.saveProduct(pr)
 #pr = ProductDAO.readProducts()
 #print(pr[0].prodID, pr[0].prodName, pr[0].prodPrice, pr[0].prodCat)
 
 #StockDAO.saveStock(pr,100)
 #st = StockDAO.readStock()
+#print(st)
+#for s in st:
+#    print(s.stoProd.prodCat)
 #print(st[0].stoProd.prodID + ',' +
 #      st[0].stoProd.prodName + ',' +
 #      st[0].stoProd.prodPrice + ',' +
