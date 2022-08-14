@@ -22,7 +22,7 @@ class prodStock:
 
 
 class sellProduct:
-    def __init__(self,soldProd:Product, salesPerson, buyerPerson, qtySold, dateSold = datetime.now().strftime('%m/%d/%Y')):
+    def __init__(self,soldProd:Product, salesPerson, buyerPerson, qtySold, dateSold = datetime.now().strftime('%d/%m/%Y')):
         self.soldProd = soldProd
         self.salesPerson = salesPerson
         self.buyerPerson = buyerPerson
@@ -31,17 +31,17 @@ class sellProduct:
 
 
 class Supplier:
-    def __init__(self, suppName, suppEIN, suppPhone, suppCat):
-        self.suppName = suppName
+    def __init__(self, suppEIN, suppName, suppTel, suppCat):
         self.suppEIN = suppEIN
-        self.suppPhone = suppPhone
+        self.suppName = suppName
+        self.suppTel = suppTel
         self.suppCat = suppCat
 
 
 class Person:
-    def __init__(self, perName, perSSN, perEmail, perPhone, perAddress):
-        self.perName = perName
+    def __init__(self, perSSN, perName, perEmail, perPhone, perAddress):
         self.perSSN = perSSN
+        self.perName = perName
         self.perEmail = perEmail
         self.perPhone = perPhone
         self.perAddress = perAddress
