@@ -1,5 +1,7 @@
+
 #!python3
 
+import datetime
 from DAO import *
 
 class CategoryController:
@@ -43,6 +45,24 @@ class CategoryController:
             #TODO: Colocar 'sem categoria' no estoque
             #mas acho que o correto era não deixar excluir eqto
             #existir produtos nessa categoria (pensar!)
+            stocks = StockDAO.readStock()
+            lsto = list(map(lambda x: prodStock(Product(
+                x.stoProd.prodID,
+                x.stoProd.prodName,
+                x.stoProd.prodPrice,
+                'No category'), x.stoQty)
+                if (x.stoProd.prodCat == delCat) else (x), stocks))
+
+            fsto = open('prodstocks.txt', 'w')
+            fsto.close
+            for s in lsto:
+                pr = Product(s.stoProd.prodID,
+                             s.stoProd.prodName,
+                             s.stoProd.prodPrice,
+                             s.stoProd.prodCat)
+                
+                StockDAO.saveStock(pr, s.stoQty)
+            print('Product category has been updated in stock file')
         else:
             print('Category does not exist! Please verify.')
 
@@ -64,9 +84,29 @@ class CategoryController:
                     for cat in ucats:
                         fcat.writelines(cat + '\n')
                 print('Category has been updated!')
+                
                 #TODO: Alterar também a categoria do estoque
+                stocks = StockDAO.readStock()
+                lsto = list(map(lambda x: prodStock(Product(
+                    x.stoProd.prodID,
+                    x.stoProd.prodName,
+                    x.stoProd.prodPrice,
+                    toCat), x.stoQty)
+                    if (x.stoProd.prodCat == fromCat) else (x), stocks))
+
+                fsto = open('prodstocks.txt', 'w')
+                fsto.close
+                for s in lsto:
+                    pr = Product(s.stoProd.prodID,
+                                 s.stoProd.prodName,
+                                 s.stoProd.prodPrice,
+                                 s.stoProd.prodCat)
+
+                    StockDAO.saveStock(pr, s.stoQty)
+                print('Product category has been updated in stock file')
         else:
             print('Sorry, category not found!')
+
 
     def listCategories(self):
         cats = CategoryDAO.readCategories()
@@ -75,6 +115,7 @@ class CategoryController:
         else:
             for cat in cats:
                 print(cat)
+
 
 
 class StockController:
@@ -99,6 +140,7 @@ class StockController:
         else:
             print('The informed category does not exist!')
 
+
     def delStockProduct(self, prodName):
         stocks = StockDAO.readStock()
         #sto = list(filter(lambda prod: prod.stoProd.prodName == prodName, stocks))
@@ -121,6 +163,7 @@ class StockController:
             print('Product has been deleted!')
         else:
             print('Product to be removed does not exist!')
+
 
     def updateStockProduct(self, prodName, newProdPrice = 0, newProdQty = -1):
         stocks = StockDAO.readStock()
@@ -222,6 +265,7 @@ class SalesController:
             pname = s.soldProd.prodName
             qty = s.qtySold
             plist = list(filter(lambda x: x['prodname'] == pname, prodSales))
+
             if len(plist) > 0:
                 prodSales = list(map(lambda x: {'prodname': pname, 'qty':int(x['qty'])+int(qty)}
                     if (x['prodname'] == pname) else (x), prodSales))
@@ -235,8 +279,309 @@ class SalesController:
             print(f"Product: {p['prodname']}\n")
             print(f"Qty sold: {p['qty']}\n")
 
+    
+    def showSales(self, dtstart, dtend):
+        allSales = SalesDAO.readSoldProd()
+        dts = datetime.strptime(dtstart,'%d/%m/%Y')
+        dte = datetime.strptime(dtend, '%d/%m/%Y')
+        dtSales = list(filter(lambda x: 
+                              datetime.strptime(x.dateSold, '%d/%m/%Y') >= dts and
+                              datetime.strptime(x.dateSold, '%d/%m/%Y') <= dte, allSales))
+        for s in dtSales:
+            mydt = datetime.strptime(s.dateSold, '%d/%m/%Y').date()
+            print(
+                f"{s.soldProd.prodName}: {s.qtySold} pieces sold on {mydt.strftime('%d/%m/%Y')}")
 
-            
+
+
+class SupplierController:
+    def newSupplier(self, suppEIN, suppName, suppTel, suppCat):
+        supps = SupplierDAO.readSuppliers()
+        foundEIN = list(filter(lambda x: 
+            x.suppEIN == suppEIN or
+            x.suppTel == suppTel, supps))
+
+        if len(foundEIN) > 0:
+            print('Supplier EIN or Telephone already exists!')
+        elif len(suppEIN) == 10 and len(suppTel) == 12:
+            print('New supplier saved!')
+            SupplierDAO.saveSupplier(Supplier(
+                suppEIN,
+                suppName,
+                suppTel,
+                suppCat
+            ))
+        else:
+            print('Invalid EIN and/or phone number!')
+
+
+    def updateSupplier(self, updSuppEIN, updSuppName, updSuppTel, updSuppCat):
+        supps = SupplierDAO.readSuppliers()
+        foundEIN = list(filter(lambda x: x.suppEIN == updSuppEIN, supps))
+        if len(foundEIN) > 0:
+            lsupps = list(map(lambda x: Supplier(
+                updSuppEIN,
+                updSuppName,
+                updSuppTel,
+                updSuppCat
+            )if (x.suppEIN == updSuppEIN)
+                else (x), supps))
+
+            fsup = open('suppliers.txt','w')
+            fsup.close()
+            for sup in lsupps:
+                SupplierDAO.saveSupplier(Supplier(
+                    sup.suppEIN,
+                    sup.suppName,
+                    sup.suppTel,
+                    sup.suppCat
+                ))
+
+            print('Supplier information updated!')
+        else:
+            print('Supplier EIN not found!')
+
+
+    def delSupplier(self, delSuppEIN):
+        supps = SupplierDAO.readSuppliers()
+        foundEIN = list(filter(lambda x: x.suppEIN == delSuppEIN, supps))
+        if len(foundEIN) > 0:
+            for i in range(len(supps)):
+                if supps[i].suppEIN == delSuppEIN:
+                    del supps[i]
+                    break
+        else:
+            print('Supplier to be deleted does not exist!')
+            return None
+
+        fsup = open('suppliers.txt', 'w')
+        fsup.close()
+        for sup in supps:
+            SupplierDAO.saveSupplier(Supplier(
+                sup.suppEIN,
+                sup.suppName,
+                sup.suppTel,
+                sup.suppCat
+            ))
+
+        print('Supplier has been deleted!')
+
+
+    def showSupplier(self):
+        supps = SupplierDAO.readSuppliers()
+        if len(supps) == 0:
+            print('Suppliers file is empty!')
+        else:
+            print('=== Supliers Sorted by Name ===')
+            sortsups = sorted(
+                supps, key=lambda k: k.suppName)
+            for sup in sortsups:
+                print(f'EIN: {sup.suppEIN}')
+                print(f'Name: {sup.suppName}')
+                print(f'Phone: {sup.suppTel}')
+                print(f'Cat.: {sup.suppCat}\n')
+
+
+
+class CustomerController:
+    def newCustomer(self, perSSN, perName, perEmail, perPhone, perAddress):
+        persons = PersonDAO.readPersons()
+        foundPerson = list(filter(lambda x:
+                                  x.perSSN == perSSN or
+                                  x.perEmail == perEmail or
+                                  x.perPhone == perPhone, persons))
+
+        if len(foundPerson) > 0:
+            print('Person SSN, E-mail or Phone already exists!')
+        elif len(perSSN) == 11 and len(perPhone) == 12:
+            print('New person saved!')
+            PersonDAO.savePerson(Person(
+                perSSN,
+                perName,
+                perEmail,
+                perPhone,
+                perAddress
+            ))
+        else:
+            print('Invalid SSN, E-mail and/or Phone number!')
+
+
+    def updateCustomer(self, perSSN, perUpdEmail, perUpdPhone, perUpdAddress):
+        custs = PersonDAO.readPersons()
+        foundSSN = list(filter(lambda x: x.perSSN == perSSN, custs))
+        if len(foundSSN) > 0:
+            lcusts = list(map(lambda x: Person(
+                perSSN,
+                x.perName,
+                perUpdEmail,
+                perUpdPhone,
+                perUpdAddress
+            )if (x.perSSN == perSSN)
+                else (x), custs))
+
+            fcust = open('persons.txt', 'w')
+            fcust.close()
+            for cust in lcusts:
+                PersonDAO.savePerson(Person(
+                    cust.perSSN,
+                    cust.perName,
+                    cust.perEmail,
+                    cust.perPhone,
+                    cust.perAddress
+                ))
+
+            print('Person information updated!')
+        else:
+            print('Person SSN not found!')
+
+
+    def delCustomer(self, delPerSSN):
+        custs = PersonDAO.readPersons()
+        foundCust = list(filter(lambda x: x.perSSN == delPerSSN, custs))
+        if len(foundCust) > 0:
+            for i in range(len(custs)):
+                if custs[i].perSSN == delPerSSN:
+                    del custs[i]
+                    break
+        else:
+            print('Customer to be deleted does not exist!')
+            return None
+
+        fcust = open('persons.txt', 'w')
+        fcust.close()
+        for cust in custs:
+            PersonDAO.savePerson(Person(
+                cust.perSSN,
+                cust.perName,
+                cust.perPhone,
+                cust.perEmail,
+                cust.perAddress
+            ))
+
+        print('Customer has been deleted!')
+
+
+    def showCustomers(self):
+        custs = PersonDAO.readPersons()
+        if len(custs) == 0:
+            print('Customer file is empty!')
+        else:
+            print('=== Customers Sorted by Name ===')
+            sortCus = sorted(
+                custs, key=lambda k: k.perName)
+            for cus in sortCus:
+                print(f'SSN: {cus.perSSN}')
+                print(f'Name: {cus.perName}')
+                print(f'Phone: {cus.perPhone}')
+                print(f'E-mail: {cus.perEmail}')
+                print(f'Address: {cus.perAddress}\n')
+
+
+
+class EmployeeController:
+    def newEmployee(self, empID, empName, empSSN, empEmail, empPhone, empAddress):
+        emps = EmployeeDAO.readEmployees()
+        foundEmpID    = list(filter(lambda x:x.empID == empID, emps))
+        foundEmpSSN = list(filter(lambda x: x.perSSN == empSSN, emps))
+        foundEmpEmail = list(filter(lambda x: x.perEmail == empEmail, emps))
+
+        if len(foundEmpSSN) > 0:
+            print('Employee SSN already exists!')
+        elif len(foundEmpID) > 0:
+            print('Employee ID already exists!')
+        elif len(foundEmpEmail) > 0:
+            print('Employee email already exists!')
+        elif len(empSSN) == 11 and len(empPhone) == 12:
+            print('New employee saved!')
+            EmployeeDAO.saveEmployee(Employee(
+                empID,
+                empSSN,
+                empName,
+                empEmail,
+                empPhone,
+                empAddress
+            ))
+        else:
+            print('Invalid SSN and/or Phone number!')
+
+
+    def updateEmployee(self, empID, perSSN, perUpdEmail, perUpdPhone, perUpdAddress):
+        emps = EmployeeDAO.readEmployees()
+        foundEmpID = list(filter(lambda x: 
+            x.empID  == empID and
+            x.perSSN == perSSN, emps))
+
+        if len(foundEmpID) > 0:
+            lemps = list(map(lambda x: Employee(
+                empID,
+                x.perName,
+                perSSN,
+                perUpdEmail,
+                perUpdPhone,
+                perUpdAddress
+            )if (x.empID == empID and x.perSSN == perSSN)
+                else (x), emps))
+
+            femp = open('employees.txt', 'w')
+            femp.close()
+            for emp in lemps:
+                EmployeeDAO.saveEmployee(Employee(
+                    emp.empID,
+                    emp.perName,
+                    emp.perSSN,
+                    emp.perEmail,
+                    emp.perPhone,
+                    emp.perAddress
+                ))
+
+            print('Employee information updated!')
+        else:
+            print('Employee ID or SSN not found!')
+
+
+    def delEmployee(self, delEmpID):
+        emps = EmployeeDAO.readEmployees()
+        foundEmp = list(filter(lambda x: x.empID == delEmpID, emps))
+        if len(foundEmp) > 0:
+            for i in range(len(emps)):
+                if emps[i].empID == delEmpID:
+                    del emps[i]
+                    break
+        else:
+            print('Employee to be deleted does not exist!')
+            return None
+
+        femp = open('employees.txt', 'w')
+        femp.close()
+        for emp in emps:
+            EmployeeDAO.saveEmployee(Employee(
+                emp.empID,
+                emp.perSSN,
+                emp.perName,
+                emp.perPhone,
+                emp.perEmail,
+                emp.perAddress
+            ))
+
+        print('Employee has been deleted!')
+
+
+    def showEmployees(self):
+        emps = EmployeeDAO.readEmployees()
+        if len(emps) == 0:
+            print('Employee file is empty!')
+        else:
+            print('=== Employees Sorted by Name ===')
+            sortEmps = sorted(
+                emps, key=lambda k: k.perName)
+            for emp in sortEmps:
+                print(f'ID: {emp.empID}')
+                print(f'SSN: {emp.perSSN}')
+                print(f'Name: {emp.perName}')
+                print(f'Phone: {emp.perPhone}')
+                print(f'E-mail: {emp.perEmail}')
+                print(f'Address: {emp.perAddress}\n')
+
 
 #c = CategoryController()
 #c.delCategory('Veggies')
@@ -244,13 +589,36 @@ class SalesController:
 #toCat = 'Fish'
 #c.updateCategory(fromCat, toCat)
 #c.listCategories()
-
 #s = StockController()
 #s.newStockProduct('5','Potato','3','Veggies',10)
 #s.delStockProduct('Orange')
-
 #s.updateStockProduct('Potato', '4', '210')
 #s.listStockProducts()
-sp = SalesController()
-#sp.addNewSales('Carrots', 'Jonecir', 'Eliane', 10)
-sp.salesReport()
+#sp = SalesController()
+#sp.addNewSales('Potato', 'Jonecir', 'Eliane', 10)
+#sp.addNewSales('Potato', 'Jonecir', 'Eliane', 20)
+#sp.addNewSales('Potato', 'Jonecir', 'Eliane', 30)
+#sp.salesReport()
+#sp.showSales('23/7/2022','04/08/2022')
+
+#sup = SupplierController()
+#sup.newSupplier('51-5503744', 'Cotsco', '953-227-5501', 'Veggies')
+#sup.updateSupplier('51-5503744', 'Cotsco', '953-227-5503', 'Veggies')
+#sup.delSupplier('40-3403778')
+#sup.showSupplier()
+
+#cus = CustomerController()
+#cus.newPerson('383-21-2923', 'Jonecir Souza', 'jonecir@gmail.com', '954-148-0680','525 Blue Lake Dr., Pompano Beach, FL')
+#cus.newPerson('385-12-9341', 'Eliane Souza', 'elianes@gmail.com', '954-358-1656','525 Blue Lake Dr., Pompano Beach, FL')
+#cus.updateCustomer('383-21-2923', 'jonecir@gmail.com', '954-785-0680','101 Walton Blv., Rochester Hills, MI')
+#cus.delCustomer('385-12-9341')
+#cus.showCustomers()
+
+
+#emp = EmployeeController()
+#emp.newEmployee('1002', 'Eliane Souza', '253-23-2133', 'eliane@gmail.com',
+#                '954-148-0680', '525 Blue Lake Dr., Pompano Beach, FL')
+#emp.updateEmployee('1001','383-21-2923','jonecir@hotmail.com','587-387-4787','35 A1A Av., Forth Lauderdate, FL')
+#emp.delEmployee('1002')
+
+#emp.showEmployees()
